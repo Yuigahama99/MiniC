@@ -6,7 +6,18 @@ This roadmap outlines the development plan for the MiniC compiler, from the mini
 
 ## Milestones Summary
 
-![Road Map](images/roadmap.png)
+| Phase | Component           | Status      |
+|:-----:|---------------------|:-----------:|
+| 0     | Project Setup       | Done        |
+| 1     | Lexer               | In Progress |
+| 2     | Parser              | Pending     |
+| 3     | Semantic Analysis   | Pending     |
+| 4     | IR Generation       | Pending     |
+| 5     | Optimization        | Optional    |
+| 6     | Code Generation     | Pending     |
+| 7     | Runtime System      | Optional    |
+| 8     | Tooling             | Optional    |
+| 9     | Language Extensions | Optional    |
 
 ---
 
