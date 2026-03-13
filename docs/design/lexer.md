@@ -337,25 +337,25 @@ Thompson's Construction is a method for converting a regular expression into an 
 
 A literal character (e.g., `a`) is represented as an NFA with two states and one transition.
 
-![literal character](../../images/lexerDesign/literal_char_nfa.png)
+![literal character](../images/lexerDesign/literal_char_nfa.png)
 
 #### Concatenation
 
 For two pattens `A` and `B`, the NFA for `AB` connects the accept state of `A` to the start state of `B`.
 
-![concatenation](../../images/lexerDesign/concatenated_nfa.png)
+![concatenation](../images/lexerDesign/concatenated_nfa.png)
 
 #### Alternation
 
 For two patterns `A` and `B`, the NFA for `A|B` introduces a new start state with ε-transitions to the start states of `A` and `B`.
 
-![alternation](../../images/lexerDesign/alternation_nfa.png)
+![alternation](../images/lexerDesign/alternation_nfa.png)
 
 #### Kleene Star
 
 For a pattern `A`, the NFA for `A*` introduces a new start state with ε-transitions to the start state of `A` and directly to the accept state.
 
-![kleene start](../../images/lexerDesign/kleene_star_nfa.png)
+![kleene start](../images/lexerDesign/kleene_star_nfa.png)
 
 ---
 
@@ -371,7 +371,7 @@ For a pattern `A`, the NFA for `A*` introduces a new start state with ε-transit
 
 **NFA**
 
-![keywords](../../images/lexerDesign/keywords_nfa.png)
+![keywords](../images/lexerDesign/keywords_nfa.png)
 
 #### Identifiers
 
@@ -383,7 +383,7 @@ For a pattern `A`, the NFA for `A*` introduces a new start state with ε-transit
 
 **NFA**
 
-![identifiers](../../images/lexerDesign/identifiers_nfa.png)
+![identifiers](../images/lexerDesign/identifiers_nfa.png)
 
 ---
 
