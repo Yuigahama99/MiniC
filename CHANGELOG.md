@@ -48,3 +48,17 @@ and this project adheres to **Semantic Versioning**
 
 ### Removed
 - roadmap.png, use raw MD table instead in roadmap.md
+
+---
+
+## [Not Released] - 03/12/2026
+
+### Added
+
+- various diagrams added under `images/lexer`
+
+### Changed
+- update `lexer.md` to cover more topics, and state the ideas behind the lexer design
+
+### Removed
+- None
