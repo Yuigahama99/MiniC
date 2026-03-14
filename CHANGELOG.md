@@ -2,12 +2,9 @@
 
 All notable changes to this project will be documented in this file
 
-The format is based on **Keep a Changelog**
-and this project adheres to **Semantic Versioning**
-
 ---
 
-## [Not Released] - 03/10/2026
+## [UnReleased] - 03/10/2026
 
 ### Added
 
@@ -31,7 +28,7 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [Not Released] - 03/11/2026
+## [UnReleased] - 03/11/2026
 
 ### Added
 
@@ -51,7 +48,7 @@ and this project adheres to **Semantic Versioning**
 
 ---
 
-## [Not Released] - 03/12/2026
+## [UnReleased] - 03/12/2026
 
 ### Added
 
@@ -59,6 +56,29 @@ and this project adheres to **Semantic Versioning**
 
 ### Changed
 - update `lexer.md` to cover more topics, and state the ideas behind the lexer design
+
+### Removed
+- None
+
+---
+
+## [UnReleased] - 03/13/2026
+
+### Added
+
+- Test suites added under `tests/lexer/`
+- scripts under `src/scripts` that handle automated testing
+- MAKEFILE with various make options
+- DEBUG_LOG() interface
+
+### Changed
+- `main.cpp` will run lexer now
+- `docs/roadmap.md` rewrite, mark lexer done
+- `README.md` rewrite, make it prettier
+- `.gitignore` covers build output, log output and test output
+- Debug logs added in lexer code
+- bugfix: lexer dead loop when some error token corner case encountered
+- Refactor nextToken() to separate unknown token handling from tokenizeOperator()
 
 ### Removed
 - None

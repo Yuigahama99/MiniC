@@ -9,8 +9,8 @@ This roadmap outlines the development plan for the MiniC compiler, from the mini
 | Phase | Component           | Status      |
 |:-----:|---------------------|:-----------:|
 | 0     | Project Setup       | Done        |
-| 1     | Lexer               | In Progress |
-| 2     | Parser              | Pending     |
+| 1     | Lexer               | Done        |
+| 2     | Parser              | WIP         |
 | 3     | Semantic Analysis   | Pending     |
 | 4     | IR Generation       | Pending     |
 | 5     | Optimization        | Optional    |

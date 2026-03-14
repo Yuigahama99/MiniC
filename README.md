@@ -1,39 +1,134 @@
-# MiniC Compiler
+# 🛠️ MiniC Compiler
 
-MiniC is a lightweight C-like programming language designed for learning, experiment and compiler construction.
-This project aims to implement a complete MiniC toolchain, including lexical analysis, parsing, semantic checking, intermediate representation, optimization, and code generation.
+A lightweight C-like compiler built from scratch in C++17 for learning and experimenting with compiler construction.
 
-## Features (Planned)
+---
 
-- A clean and minimal C-like syntax
-- Deterministic grammar suitable for LL/LR parsing
-- A modular compiler architecture
-- Intermediate Representation (IR) for analysis and optimization
-- Optional virtual machine or native code generation
-- Clear documentation and examples
+## 📖 Overview
 
-## Project Goals
+MiniC is a minimal subset of C designed for learning purposes. This project implements a complete compiler toolchain — from lexical analysis to (eventually) code generation — with a clean, modular architecture that is easy to follow and extend.
 
-- Provide an educational compiler implementation that is easy to understand
-- Demonstrate modern compiler design techniques
-- Offer a playground for erxperimenting with language features
-- Maintain a clean and well-structured codebase
+## ✨ Features
 
-## Documentation
+### 🏗️ Compiler Pipeline
+- **Lexer** — Full tokenizer supporting keywords, identifiers, int/float/char/string literals, multi-char operators, and delimiters
+- **Parser** / **Semantic** / **IR** / **Optimizer** / **Codegen** — Coming soon
 
-All documentation is located in the 'docs/' directory:
+### 🧰 Tooling & Infrastructure
+- **Makefile Build System** — One-command build with `make` / `make debug` / `make clean`
+- **Debug Logging** — Compile-time toggleable (`-DENABLE_DEBUG_LOG`), per-module log files (`logs/lexer.log`, etc.), printf-style `DEBUG_LOG` macro and RAII `TRACE_ENTER_EXIT` for automatic function tracing
+- **Automated Test Runner** — Python-based, auto-discovers test suites and cases, outputs results to `tests/<suite>/output/`
 
-- 'introduction.md' - Overview and motivation
-- 'specification.md' - MiniC language specification
-- 'architecture.md' - Compiler architecture
-- 'design/' - Detailed design documents
-- 'examples.md' - Sample MiniC programs
+### 📐 Design Principles
+- **Modular Architecture** — Each compiler phase lives in its own directory with independent headers
+- **Extensible** — Adding a new compiler phase only requires a new module directory and Makefile entry
 
-## Getting Started
+## 🚧 Roadmap
 
-More details will be added as the project evolves
-For now, you can explore the documentation and follow the development roadmap in 'docs/roadmap.md'.
+| Module       | Status         |
+|--------------|----------------|
+| Lexer        | ✅ Complete     |
+| Parser       | 🔲 Planned      |
+| Semantic     | 🔲 Planned      |
+| IR           | 🔲 Planned      |
+| Optimizer    | 🔲 Planned      |
+| Code Gen     | 🔲 Planned      |
+| Runtime / VM | 🔲 Planned      |
 
-## License
+## 📂 Project Structure
 
-This project will include a license later.
+```
+MiniC/
+├── src/
+│   ├── main.cpp            # Entry point
+│   ├── debug.h / debug.cpp # Debug logging system
+│   ├── lexer/              # Lexer module
+│   ├── parser/             # Parser module (WIP)
+│   ├── semantic/           # Semantic analysis (WIP)
+│   ├── ir/                 # Intermediate representation (WIP)
+│   ├── optimizer/          # Optimization passes (WIP)
+│   ├── codegen/            # Code generation (WIP)
+│   └── runtime/            # Runtime / VM (WIP)
+├── tests/
+│   └── lexer/              # Lexer test cases (.mc files)
+├── scripts/
+│   ├── run_tests.py        # Test runner (all suites)
+│   └── test_lexer.py       # Lexer-only test wrapper
+├── docs/                   # Documentation
+└── Makefile                # Build system
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **C++17 compiler** (g++ 13+ recommended)
+- **Make** (`mingw32-make` on Windows / MSYS2)
+- **Python 3** (for running tests)
+
+### Build
+
+```bash
+# Normal build (no debug logging)
+mingw32-make
+
+# Build with debug logging enabled
+mingw32-make debug
+
+# Clean build artifacts
+mingw32-make clean
+```
+
+### Run
+
+```bash
+./build/minic <source_file.mc>
+```
+
+### Test
+
+```bash
+# Run all test suites
+mingw32-make test
+
+# Run all test suites with log enabled
+mingw32-make debug test
+
+# Run lexer tests only
+mingw32-make test-lexer
+```
+
+Test output is saved to `tests/<suite>/output/*.out` for inspection.
+
+## 🐛 Debug Logging
+
+The debug logging system can be toggled at compile time:
+
+- `mingw32-make` — logging disabled (zero overhead)
+- `mingw32-make debug` — logging enabled, logs written to `logs/<module>.log`
+
+Usage in code:
+
+```cpp
+#include "debug.h"
+
+void someFunction() {
+    TRACE_ENTER_EXIT(LogModule::Lexer);  // Auto logs Entering/Exiting
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Info, "Processing token: %s", lexeme.c_str());
+}
+```
+
+Log levels: `Debug`, `Info`, `Warn`, `Error`
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [specification.md](docs/specification.md) | MiniC language specification |
+| [architecture.md](docs/architecture.md) | Compiler architecture overview |
+| [roadmap.md](docs/roadmap.md) | Development roadmap |
+| [design/](docs/design/) | Per-module design documents |
+
+## 📄 License
+
+TBD

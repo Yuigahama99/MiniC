@@ -1,4 +1,13 @@
 .vscode/
 
+# Build output
+build/
+
+# Debug log output
+logs/
+
+# Test output
+tests/**/output/
+
 # Ignore image editor .pptx
 docs/images/Image_Editor.pptx

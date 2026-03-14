@@ -1,43 +1,43 @@
-#include "lexer.h"
-
+#include "include\lexer.h"
+#include "..\debug.h"
 
 // ----------------------------------
 // helper functions
 // ----------------------------------
 /**
  * @brief Checks if a character is an alphabetic letter, wrapping std::isalpha to avoid signed char issues
- * 
+ *
  * @param [char] c the character to check
  * @return [bool] true if the character is an alphabetic letter
  * @return [bool] false otherwise
  */
-inline bool isAlpha(char c) 
-{ 
-    return std::isalpha(static_cast<unsigned char>(c)); 
+inline bool isAlpha(char c)
+{
+    return std::isalpha(static_cast<unsigned char>(c));
 }
 
 /**
  * @brief Checks if a character is a digit, wrapping std::isdigit to avoid signed char issues
- * 
+ *
  * @param [char] c the character to check
  * @return [bool] true if the character is a digit
  * @return [bool] false otherwise
  */
-inline bool isDigit(char c) 
-{ 
-    return std::isdigit(static_cast<unsigned char>(c)); 
+inline bool isDigit(char c)
+{
+    return std::isdigit(static_cast<unsigned char>(c));
 }
 
 /**
  * @brief Checks if a character is alphanumeric, wrapping std::isalnum to avoid signed char issues
- * 
+ *
  * @param [char] c the character to check
  * @return [bool] true if the character is alphanumeric
  * @return [bool] false otherwise
  */
-inline bool isAlphaNum(char c) 
+inline bool isAlphaNum(char c)
 {
-    return std::isalnum(static_cast<unsigned char>(c)); 
+    return std::isalnum(static_cast<unsigned char>(c));
 }
 
 // ----------------------------------
@@ -56,8 +56,15 @@ Lexer::Lexer(const std::string &src)
  */
 char Lexer::peek() const
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     if (current >= source.size())
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "peek() at end of source, returning '\\0'");
         return '\0';
+    }
+
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "peek() returning %s", charRepr(source[current]));
     return source[current];
 }
 
@@ -68,8 +75,15 @@ char Lexer::peek() const
  */
 char Lexer::peekNext() const
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     if (current + 1 >= source.size())
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "peekNext() at end of source, returning '\\0'");
         return '\0';
+    }
+
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "peekNext() returning %s", charRepr(source[current + 1]));
     return source[current + 1];
 }
 
@@ -80,6 +94,8 @@ char Lexer::peekNext() const
  */
 char Lexer::advance()
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     char c = peek();
 
     if (c == '\n')
@@ -92,7 +108,10 @@ char Lexer::advance()
         column++;
     }
 
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "cursor moved to line %d, column %d", line, column);
     current++;
+
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "advance() returning %s", charRepr(c));
     return c;
 }
 
@@ -101,11 +120,13 @@ char Lexer::advance()
 // ----------------------------------
 /**
  * @brief Skips over whitespace characters in the source, as well as comments (both line comments and block comments)
- * 
- * @return std::optional<Token> 
+ *
+ * @return std::optional<Token>
  */
 std::optional<Token> Lexer::skipWhitespaceOrComment()
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     while (true)
     {
         char c = peek();
@@ -116,24 +137,29 @@ std::optional<Token> Lexer::skipWhitespaceOrComment()
         case '\t':
         case '\r':
         case '\n':
+            DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Skipping whitespace character %s", charRepr(c));
             advance();
             break;
         case '/':
             // check for comments
             if (peekNext() == '/')
             {
+                DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "line comment detected, skipping until end of line");
+
                 // line comment, consume '//'
                 advance();
                 advance();
 
                 // skip until end of line or end of file
-                while(peek() != '\n' && peek() != '\0')
+                while (peek() != '\n' && peek() != '\0')
                 {
                     advance();
                 }
             }
             else if (peekNext() == '*')
             {
+                DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "block comment detected, skipping until \"*/\"");
+
                 int startLine = line;
                 int startColumn = column;
 
@@ -146,26 +172,31 @@ std::optional<Token> Lexer::skipWhitespaceOrComment()
                 {
                     advance();
                 }
-                
+
                 // consume '*/' if we found it
                 if (peek() == '*' && peekNext() == '/')
                 {
+                    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "End of block comment found");
                     advance();
                     advance();
                 }
                 else
                 {
                     // Unterminated block comment
+                    // EOF reached, no need to advance for this error
+                    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Unterminated block comment detected");
                     return Token(TokenType::Error, "Unterminated block comment", startLine, startColumn);
                 }
             }
             else
             {
+                DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Not a comment, stop skipping");
                 return std::nullopt; // not a comment, stop skipping
             }
             break;
 
         default:
+            DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Not whitespace or comment, stop skipping");
             return std::nullopt; // no more whitespace or comments
         }
     }
@@ -181,6 +212,8 @@ std::optional<Token> Lexer::skipWhitespaceOrComment()
  */
 Token Lexer::tokenizeIdentifier()
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     int startLine = line;
     int startColumn = column;
     size_t start = current;
@@ -200,10 +233,12 @@ Token Lexer::tokenizeIdentifier()
     // check if the lexeme is a keyword
     if (keywords.count(lexeme))
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Keyword detected: %s", lexeme.c_str());
         return Token(keywords.at(lexeme), lexeme, startLine, startColumn);
     }
 
     // otherwise, it's an identifier
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Identifier detected: %s", lexeme.c_str());
     return Token(TokenType::Identifier, lexeme, startLine, startColumn);
 }
 
@@ -214,6 +249,8 @@ Token Lexer::tokenizeIdentifier()
  */
 Token Lexer::tokenizeNumber()
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     int startLine = line;
     int startColumn = column;
     size_t start = current;
@@ -228,6 +265,7 @@ Token Lexer::tokenizeNumber()
     bool isFloat = false;
     if (peek() == '.' && isDigit(peekNext()))
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Decimal point detected, tokenizing as float literal");
         isFloat = true;
         advance(); // consume '.'
 
@@ -242,9 +280,11 @@ Token Lexer::tokenizeNumber()
 
     if (isFloat)
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Float literal detected: %s", lexeme.c_str());
         return Token(TokenType::FloatLiteral, lexeme, startLine, startColumn);
     }
 
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Integer literal detected: %s", lexeme.c_str());
     return Token(TokenType::IntLiteral, lexeme, startLine, startColumn);
 }
 
@@ -255,6 +295,8 @@ Token Lexer::tokenizeNumber()
  */
 Token Lexer::tokenizeChar()
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     int startLine = line;
     int startColumn = column;
     size_t start = current;
@@ -266,12 +308,17 @@ Token Lexer::tokenizeChar()
     if (c == '\0' || c == '\n')
     {
         // Unterminated char literal
+        // EOF reached, no need to advance for this error
+        // '\n' reached, will be consumed by skipWhitespaceOrComment upon next call to nextToken
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Unterminated char literal detected");
         return Token(TokenType::Error, "Unterminated char literal", startLine, startColumn);
     }
 
     // escapes currently not supported for MiniC, reject
     if (c == '\\')
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Escape sequence detected, not supported in char literals");
+        advance();
         return Token(TokenType::Error, "Escape sequences not supported in char literals", startLine, startColumn);
     }
 
@@ -282,6 +329,7 @@ Token Lexer::tokenizeChar()
     if (peek() != '\'')
     {
         // Unterminated char literal
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Unterminated char literal detected");
         return Token(TokenType::Error, "Unterminated char literal", startLine, startColumn);
     }
 
@@ -291,6 +339,7 @@ Token Lexer::tokenizeChar()
     // extract lexeme
     std::string lexeme = source.substr(start, current - start);
 
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Char literal detected: %s", lexeme.c_str());
     return Token(TokenType::CharLiteral, lexeme, startLine, startColumn);
 }
 
@@ -301,6 +350,8 @@ Token Lexer::tokenizeChar()
  */
 Token Lexer::tokenizeString()
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     int startLine = line;
     int startColumn = column;
     size_t start = current;
@@ -315,12 +366,16 @@ Token Lexer::tokenizeString()
         if (c == '\0' || c == '\n')
         {
             // Unterminated string literal
+            // EOF reached, no need to advance for this error
+            // '\n' reached, will be consumed by skipWhitespaceOrComment upon next call to nextToken
+            DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Unterminated string literal detected");
             return Token(TokenType::Error, "Unterminated string literal", startLine, startColumn);
         }
 
         if (c == '"')
         {
             // consume closing double quote
+            DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "End of string literal detected");
             advance();
             break; // end of string literal
         }
@@ -328,6 +383,9 @@ Token Lexer::tokenizeString()
         // escapes currently not supported for MiniC, reject
         if (c == '\\')
         {
+            DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Escape sequence detected, not supported in string literals");
+
+            advance();
             return Token(TokenType::Error, "Escape sequences not supported in string literals", startLine, startColumn);
         }
 
@@ -338,6 +396,7 @@ Token Lexer::tokenizeString()
     // extract lexeme
     std::string lexeme = source.substr(start, current - start);
 
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "String literal detected: %s", lexeme.c_str());
     return Token(TokenType::StringLiteral, lexeme, startLine, startColumn);
 }
 
@@ -346,35 +405,18 @@ Token Lexer::tokenizeString()
  *
  * @return [Token] a token representing an operator
  */
-Token Lexer::tokenizeOperator()
+Token Lexer::tokenizeOperator(const std::string &lexeme)
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     int startLine = line;
     int startColumn = column;
-    size_t start = current;
 
-    // check 2-character operators first
-    if(current + 1 < source.size())
-    {
-        std::string lexeme = source.substr(start, 2);
-        if(operators.count(lexeme))
-        {
-            advance();
-            advance();
-
-            return Token(operators.at(lexeme), lexeme, startLine, startColumn);
-        }
-    }
-
-    // check 1-character operators
-    std::string lexeme = source.substr(start, 1);
-    if(operators.count(lexeme))
-    {
+    for (size_t i = 0; i < lexeme.size(); i++)
         advance();
-        return Token(operators.at(lexeme), lexeme, startLine, startColumn);
-    }
 
-    // Unknown operator
-    return Token(TokenType::Error, "Unknown operator: " + lexeme, startLine, startColumn);
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Operator detected: %s", lexeme.c_str());
+    return Token(operators.at(lexeme), lexeme, startLine, startColumn);
 }
 
 /**
@@ -384,20 +426,15 @@ Token Lexer::tokenizeOperator()
  */
 Token Lexer::tokenizeDelimiter()
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
     int startLine = line;
     int startColumn = column;
     size_t start = current;
 
-    char c = peek();
-    if (delimiters.count(c))
-    {
-        advance();
-        std::string lexeme = source.substr(start, 1);
-        return Token(delimiters.at(c), lexeme, startLine, startColumn);
-    }
-
-    // Unknown delimiter
-    return Token(TokenType::Error, std::string("Unknown delimiter: ") + c, startLine, startColumn);
+    char c = advance();
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Delimiter detected: %s", charRepr(c));
+    return Token(delimiters.at(c), source.substr(start, 1), startLine, startColumn);
 }
 
 /**
@@ -407,42 +444,82 @@ Token Lexer::tokenizeDelimiter()
  */
 Token Lexer::nextToken()
 {
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
+    // 1. skip whitespace and comments
     auto err = skipWhitespaceOrComment();
     if (err.has_value())
-    {
         return *err;
-    }
 
+    int startLine = line;
+    int startColumn = column;
     char c = peek();
+
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Next token starts with: %s", charRepr(c));
+
+    // 2. end of file
     if (c == '\0')
     {
-        return Token(TokenType::EndOfFile, std::string(""), line, column);
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Reaching end of file");
+        return Token(TokenType::EndOfFile, "", startLine, startColumn);
     }
 
+    // 3. identifiers and keywords
     if (isAlpha(c) || c == '_')
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid start of an identifier, tokenizing as identifier or keyword", charRepr(c));
         return tokenizeIdentifier();
     }
 
+    // 4. numeric literals
     if (isDigit(c))
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid start of a numeric literal, tokenizing as number", charRepr(c));
         return tokenizeNumber();
     }
 
+    // 5. character literals
     if (c == '\'')
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid start of a char literal, tokenizing as char literal", charRepr(c));
         return tokenizeChar();
     }
 
+    // 6. string literals
     if (c == '"')
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid start of a string literal, tokenizing as string literal", charRepr(c));
         return tokenizeString();
     }
 
+    // 7. delimiters
     if (delimiters.count(c))
     {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid delimiter, tokenizing as delimiter", charRepr(c));
         return tokenizeDelimiter();
     }
 
-    return tokenizeOperator();
+    // 8. operators: try 2-char first, then 1-char
+    if (current + 1 < source.size())
+    {
+        std::string two = source.substr(current, 2);
+        if (operators.count(two))
+        {
+            DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid two-char operator, tokenizing as operator", two.c_str());
+            return tokenizeOperator(two);
+        }
+    }
+    {
+        std::string one = source.substr(current, 1);
+        if (operators.count(one))
+        {
+            DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid one-char operator, tokenizing as operator", one.c_str());
+            return tokenizeOperator(one);
+        }
+    }
+
+    // 9. unknown character
+    advance();
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Unknown character %s encountered, returning error token", charRepr(c));
+    return Token(TokenType::Error, std::string("Unknown character: ") + c, startLine, startColumn);
 }

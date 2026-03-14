@@ -158,7 +158,7 @@ private:
     Token tokenizeNumber();
     Token tokenizeChar();
     Token tokenizeString();
-    Token tokenizeOperator();
+    Token tokenizeOperator(const std::string &lexeme);
     Token tokenizeDelimiter();
 
 private:
