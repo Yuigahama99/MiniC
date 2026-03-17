@@ -15,13 +15,13 @@ MiniC is a minimal subset of C designed for learning purposes. This project impl
 - **Parser** / **Semantic** / **IR** / **Optimizer** / **Codegen** — Coming soon
 
 ### 🧰 Tooling & Infrastructure
-- **Makefile Build System** — One-command build with `make` / `make debug` / `make clean`
+- **CMake Build System** — LLVM clang-based build with `cmake --preset ...`
 - **Debug Logging** — Compile-time toggleable (`-DENABLE_DEBUG_LOG`), per-module log files (`logs/lexer.log`, etc.), printf-style `DEBUG_LOG` macro and RAII `TRACE_ENTER_EXIT` for automatic function tracing
 - **Automated Test Runner** — Python-based, auto-discovers test suites and cases, outputs results to `tests/<suite>/output/`
 
 ### 📐 Design Principles
 - **Modular Architecture** — Each compiler phase lives in its own directory with independent headers
-- **Extensible** — Adding a new compiler phase only requires a new module directory and Makefile entry
+- **Extensible** — Adding a new compiler phase only requires a new module directory and CMake target entry
 
 ## 🚧 Roadmap
 
@@ -39,44 +39,52 @@ MiniC is a minimal subset of C designed for learning purposes. This project impl
 
 ```
 MiniC/
-├── src/
-│   ├── main.cpp            # Entry point
-│   ├── debug.h / debug.cpp # Debug logging system
-│   ├── lexer/              # Lexer module
-│   ├── parser/             # Parser module (WIP)
-│   ├── semantic/           # Semantic analysis (WIP)
-│   ├── ir/                 # Intermediate representation (WIP)
-│   ├── optimizer/          # Optimization passes (WIP)
-│   ├── codegen/            # Code generation (WIP)
-│   └── runtime/            # Runtime / VM (WIP)
-├── tests/
-│   └── lexer/              # Lexer test cases (.mc files)
+├── src/                          # Compiler source code
+│   ├── main.cpp                  # Compiler entry point
+│   ├── common/                   # Shared utilities (planned)
+│   │   └── debug.h / debug.cpp   # Logging and trace helpers
+│   ├── lexer/                    # Lexer module (implemented)
+│   │   ├── include/              # Public lexer headers
+│   │   └── lexer.cpp             # Lexer implementation
+│   ├── parser/                   # Parser module (planned)
+│   ├── semantic/                 # Semantic analysis module (planned)
+│   ├── ir/                       # IR module (planned)
+│   ├── optimizer/                # Optimization passes (planned)
+│   ├── codegen/                  # Code generation module (planned)
+│   └── runtime/                  # Runtime/VM module (planned)
+├── tests/                        # Test inputs by module
+│   └── lexer/                    # Lexer test cases (.mc)
 ├── scripts/
-│   ├── run_tests.py        # Test runner (all suites)
-│   └── test_lexer.py       # Lexer-only test wrapper
-├── docs/                   # Documentation
-└── Makefile                # Build system
+│   ├── run_tests.py              # Test runner (all suites)
+│   └── test_lexer.py             # Lexer-only wrapper
+├── docs/                         # Design/spec docs
+├── CMakeLists.txt                # Main CMake build definition
+├── CMakePresets.json             # LLVM debug/release presets
+├── Makefile                      # Convenience wrapper for CMake
+└── README.md
 ```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- **C++17 compiler** (g++ 13+ recommended)
-- **Make** (`mingw32-make` on Windows / MSYS2)
+- **CMake** (3.20+)
+- **LLVM clang** (Homebrew `llvm`)
 - **Python 3** (for running tests)
 
 ### Build
 
 ```bash
-# Normal build (no debug logging)
-mingw32-make
+# Configure + build (LLVM clang debug)
+cmake --preset llvm-debug
+cmake --build --preset build-debug
 
 # Build with debug logging enabled
-mingw32-make debug
+cmake --preset llvm-debug -DENABLE_DEBUG_LOG=ON
+cmake --build --preset build-debug
 
 # Clean build artifacts
-mingw32-make clean
+rm -rf build logs
 ```
 
 ### Run
@@ -89,13 +97,15 @@ mingw32-make clean
 
 ```bash
 # Run all test suites
-mingw32-make test
+cmake --build build --target test
 
 # Run all test suites with log enabled
-mingw32-make debug test
+cmake --preset llvm-debug -DENABLE_DEBUG_LOG=ON
+cmake --build --preset build-debug
+cmake --build build --target test
 
 # Run lexer tests only
-mingw32-make test-lexer
+cmake --build build --target test-lexer
 ```
 
 Test output is saved to `tests/<suite>/output/*.out` for inspection.
@@ -104,13 +114,13 @@ Test output is saved to `tests/<suite>/output/*.out` for inspection.
 
 The debug logging system can be toggled at compile time:
 
-- `mingw32-make` — logging disabled (zero overhead)
-- `mingw32-make debug` — logging enabled, logs written to `logs/<module>.log`
+- `cmake --preset llvm-debug && cmake --build --preset build-debug` — logging disabled (zero overhead)
+- `cmake --preset llvm-debug -DENABLE_DEBUG_LOG=ON && cmake --build --preset build-debug` — logging enabled, logs written to `logs/<module>.log`
 
 Usage in code:
 
 ```cpp
-#include "debug.h"
+#include "common/debug.h"
 
 void someFunction() {
     TRACE_ENTER_EXIT(LogModule::Lexer);  // Auto logs Entering/Exiting
@@ -131,4 +141,4 @@ Log levels: `Debug`, `Info`, `Warn`, `Error`
 
 ## 📄 License
 
-TBD
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

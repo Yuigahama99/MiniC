@@ -10,10 +10,20 @@ import sys
 import subprocess
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BINARY   = os.path.join(ROOT_DIR, "build", "minic.exe")
 TEST_DIR = os.path.join(ROOT_DIR, "tests")
 
-# ANSI colors (work in Windows 10+ terminals)
+
+def resolve_binary_path(root_dir):
+    """Resolve project binary path for the CMake/macOS workflow."""
+    candidate = os.path.join(root_dir, "build", "minic")
+    if os.path.isfile(candidate):
+        return candidate
+    return candidate
+
+
+BINARY = resolve_binary_path(ROOT_DIR)
+
+# ANSI colors
 GREEN  = "\033[92m"
 RED    = "\033[91m"
 CYAN   = "\033[96m"

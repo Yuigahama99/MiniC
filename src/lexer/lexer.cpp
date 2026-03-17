@@ -1,5 +1,5 @@
-#include "include\lexer.h"
-#include "..\debug.h"
+#include "include/lexer.h"
+#include "../common/debug.h"
 
 // ----------------------------------
 // helper functions

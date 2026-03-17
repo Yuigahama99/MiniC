@@ -1,0 +1,40 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "llvm-debug",
+            "displayName": "LLVM Clang Debug",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++"
+            }
+        },
+        {
+            "name": "llvm-release",
+            "displayName": "LLVM Clang Release",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_COMPILER": "/opt/homebrew/opt/llvm/bin/clang++"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build-debug",
+            "configurePreset": "llvm-debug"
+        },
+        {
+            "name": "build-release",
+            "configurePreset": "llvm-release"
+        }
+    ]
+}

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "debug.h"
+#include "common/debug.h"
 #include "lexer/include/lexer.h"
 
 const char *tokenTypeName(TokenType type)

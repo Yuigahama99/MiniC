@@ -82,3 +82,31 @@ All notable changes to this project will be documented in this file
 
 ### Removed
 - None
+
+---
+
+## [0.1.0] - 03/17/2026
+
+### Added
+
+- `CMakeLists.txt` added as main build entry for MiniC
+- `CMakePresets.json` added with `llvm-debug` and `llvm-release`
+- CMake custom targets added for `test` and `test-lexer`
+- New `src/common/` module added to host shared utilities (`debug.h`, `debug.cpp`)
+- MIT `LICENSE` file added for project release
+
+### Changed
+
+- Project build workflow migrated to CMake + official LLVM clang on macOS
+- `Makefile` refactored into a CMake wrapper (`all`, `debug`, `test`, `test-lexer`, `clean`)
+- debug module moved from `src/` to `src/common/`
+- include paths updated to unix style (`/`) and new module path (`common/debug.h`)
+- `CMakeLists.txt` updated to build `src/common/debug.cpp`
+- `run_tests.py` updated to use `build/minic` binary in macOS workflow
+- `README.md` rewritten for CMake/LLVM usage and updated project structure section
+
+### Removed
+
+- Windows-specific build flow and commands (`mingw32-make`, `if not exist`, `rmdir /s /q`)
+- Windows binary naming usage (`minic.exe`) in test workflow
+- old debug module location under `src/debug.h` and `src/debug.cpp`
