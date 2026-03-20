@@ -110,3 +110,26 @@ All notable changes to this project will be documented in this file
 - Windows-specific build flow and commands (`mingw32-make`, `if not exist`, `rmdir /s /q`)
 - Windows binary naming usage (`minic.exe`) in test workflow
 - old debug module location under `src/debug.h` and `src/debug.cpp`
+
+---
+
+## [UnReleased] - 03/20/2026
+
+### Added
+
+- Extended floating-point number format support:
+  - Exponent notation: `1e5`, `1E-3`, `100e+2` (both uppercase and lowercase E)
+  - Leading-dot literals: `.5`, `.5e-10` (floats starting with decimal point)
+- Test coverage for exponent notation with leading zeros and sign variations
+- Restructure the lexer files hierarchy. Make it more modular, move token and tables to their own files.
+
+### Changed
+
+- Refactored `tokenizeNumber()` and `nextToken()` to support exponent notation
+- Extracted leading-dot float parsing into dedicated function for better maintainability
+- Updated `lexer.md` with new floating-point literal grammar rules
+- Improved code separation of concerns: dedicated tokenizer for each literal type
+
+### Removed
+
+- None

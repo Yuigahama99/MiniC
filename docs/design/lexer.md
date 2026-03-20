@@ -218,11 +218,19 @@ Interger literals are sequences of digits.
 
 #### Floating-Point Literals
 
-Floating-point literals consist of digits, followed by a dot (`.`), and more digitis.
+Floating-point literals consist of digits with optional fractional and exponent parts:
+- Standard: `123.45`, `0.5`
+- Leading-dot: `.5` (equivalent to `0.5`)
+- Exponent notation: `1e5`, `1E-3`, `100e+2`, `.5e10` (with optional +/- sign)
 
 ```regex
-[0-9]+\.[0-9]+
+([0-9]+\.?[0-9]*|\.?[0-9]+)([eE][+-]?[0-9]+)?
 ```
+
+In practice, the lexer tokenizes:
+- `[0-9]+` followed by optional `.` and digits, then optional exponent
+- `.` followed by digits with optional exponent
+- Exponent: `(e|E)` followed by optional `(+|-)` and required digits
 
 #### Charater Literals
 
@@ -498,6 +506,8 @@ The MiniC lexer is implemented as a state machine, but instead of using a precom
 - Conditionals: `if` and `switch` statements to determine the next state based on the current character.
 - Helper Functions: Functions like `tokenizeIdentifier`, `tokenizeNumber`, and `tokenizeOperator` are used to handle specific token types.
 - Manual State Management: The lexer uses methods like `peek` and `advance` to manually manage the input stream and determine the next state.
+
+In the current code layout, token/category lookup tables are separated from lexer flow control: `lexer.cpp` owns scanning logic, while `lexer_tables.cpp` owns keyword/operator/delimiter mappings and exposes query helpers through `lexer_tables.h`. This reduces header bloat and keeps table maintenance isolated.
 
 **Comparison with DFA-Based Lexer**
 

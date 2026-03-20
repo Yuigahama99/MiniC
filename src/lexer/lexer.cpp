@@ -1,5 +1,8 @@
 #include "include/lexer.h"
+#include "include/lexer_tables.h"
 #include "../common/debug.h"
+
+#include <cctype>
 
 // ----------------------------------
 // helper functions
@@ -43,8 +46,8 @@ inline bool isAlphaNum(char c)
 // ----------------------------------
 // Constructor for lexer
 // ----------------------------------
-Lexer::Lexer(const std::string &src)
-    : source(src), current(0), line(1), column(1) {}
+Lexer::Lexer(std::string src)
+    : source(std::move(src)), current(0), line(1), column(1) {}
 
 // ----------------------------------
 // Source handling
@@ -231,10 +234,11 @@ Token Lexer::tokenizeIdentifier()
     std::string lexeme = source.substr(start, current - start);
 
     // check if the lexeme is a keyword
-    if (keywords.count(lexeme))
+    auto keywordType = keywordTokenType(lexeme);
+    if (keywordType.has_value())
     {
         DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Keyword detected: %s", lexeme.c_str());
-        return Token(keywords.at(lexeme), lexeme, startLine, startColumn);
+        return Token(*keywordType, lexeme, startLine, startColumn);
     }
 
     // otherwise, it's an identifier
@@ -275,6 +279,33 @@ Token Lexer::tokenizeNumber()
         }
     }
 
+    // exponent part (e or E followed by optional +/- and digits)
+    if ((peek() == 'e' || peek() == 'E') && (isDigit(peekNext()) || (peekNext() == '+' || peekNext() == '-') && current + 2 < source.size() && isDigit(source[current + 2])))
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Exponent detected, tokenizing as float literal");
+        isFloat = true;
+        advance(); // consume 'e' or 'E'
+
+        // optional sign
+        if (peek() == '+' || peek() == '-')
+        {
+            advance();
+        }
+
+        // exponent digits (at least one required)
+        if (!isDigit(peek()))
+        {
+            DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Invalid exponent format: missing digits after exponent sign");
+            std::string lexeme = source.substr(start, current - start);
+            return Token(TokenType::Error, "Invalid exponent format", startLine, startColumn);
+        }
+
+        while (isDigit(peek()))
+        {
+            advance();
+        }
+    }
+
     // extract lexeme
     std::string lexeme = source.substr(start, current - start);
 
@@ -286,6 +317,52 @@ Token Lexer::tokenizeNumber()
 
     DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Integer literal detected: %s", lexeme.c_str());
     return Token(TokenType::IntLiteral, lexeme, startLine, startColumn);
+}
+
+/**
+ * @brief Tokenizes a leading-dot floating-point literal from the source (e.g., .5, .5e10, .5E-3)
+ *
+ * @return [Token] a token representing a floating-point literal
+ */
+Token Lexer::tokenizeLeadingDotFloat()
+{
+    TRACE_ENTER_EXIT(LogModule::Lexer);
+
+    int startLine = line;
+    int startColumn = column;
+    size_t start = current;
+
+    // consume the dot
+    advance();
+
+    // fractional part (digits after the dot)
+    while (isDigit(peek()))
+    {
+        advance();
+    }
+
+    // exponent part (e or E followed by optional +/- and digits)
+    if ((peek() == 'e' || peek() == 'E') && (isDigit(peekNext()) || (peekNext() == '+' || peekNext() == '-') && current + 2 < source.size() && isDigit(source[current + 2])))
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Exponent detected in leading-dot float, continuing as float literal");
+        advance(); // consume 'e' or 'E'
+
+        // optional sign
+        if (peek() == '+' || peek() == '-')
+        {
+            advance();
+        }
+
+        // exponent digits (at least one required)
+        while (isDigit(peek()))
+        {
+            advance();
+        }
+    }
+
+    std::string lexeme = source.substr(start, current - start);
+    DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Float literal detected: %s", lexeme.c_str());
+    return Token(TokenType::FloatLiteral, lexeme, startLine, startColumn);
 }
 
 /**
@@ -415,8 +492,15 @@ Token Lexer::tokenizeOperator(const std::string &lexeme)
     for (size_t i = 0; i < lexeme.size(); i++)
         advance();
 
+    auto opType = operatorTokenType(lexeme);
+    if (!opType.has_value())
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Operator lookup failed unexpectedly: %s", lexeme.c_str());
+        return Token(TokenType::Error, std::string("Unknown operator: ") + lexeme, startLine, startColumn);
+    }
+
     DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Operator detected: %s", lexeme.c_str());
-    return Token(operators.at(lexeme), lexeme, startLine, startColumn);
+    return Token(*opType, lexeme, startLine, startColumn);
 }
 
 /**
@@ -433,8 +517,15 @@ Token Lexer::tokenizeDelimiter()
     size_t start = current;
 
     char c = advance();
+    auto delimiterType = delimiterTokenType(c);
+    if (!delimiterType.has_value())
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Delimiter lookup failed unexpectedly: %s", charRepr(c));
+        return Token(TokenType::Error, std::string("Unknown delimiter: ") + c, startLine, startColumn);
+    }
+
     DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Delimiter detected: %s", charRepr(c));
-    return Token(delimiters.at(c), source.substr(start, 1), startLine, startColumn);
+    return Token(*delimiterType, source.substr(start, 1), startLine, startColumn);
 }
 
 /**
@@ -478,6 +569,13 @@ Token Lexer::nextToken()
         return tokenizeNumber();
     }
 
+    // 4.5 leading-dot floating-point literals (e.g., .5)
+    if (c == '.' && isDigit(peekNext()))
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Leading dot detected, tokenizing as float literal");
+        return tokenizeLeadingDotFloat();
+    }
+
     // 5. character literals
     if (c == '\'')
     {
@@ -493,7 +591,7 @@ Token Lexer::nextToken()
     }
 
     // 7. delimiters
-    if (delimiters.count(c))
+    if (delimiterTokenType(c).has_value())
     {
         DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid delimiter, tokenizing as delimiter", charRepr(c));
         return tokenizeDelimiter();
@@ -503,7 +601,7 @@ Token Lexer::nextToken()
     if (current + 1 < source.size())
     {
         std::string two = source.substr(current, 2);
-        if (operators.count(two))
+        if (operatorTokenType(two).has_value())
         {
             DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid two-char operator, tokenizing as operator", two.c_str());
             return tokenizeOperator(two);
@@ -511,7 +609,7 @@ Token Lexer::nextToken()
     }
     {
         std::string one = source.substr(current, 1);
-        if (operators.count(one))
+        if (operatorTokenType(one).has_value())
         {
             DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "%s is a valid one-char operator, tokenizing as operator", one.c_str());
             return tokenizeOperator(one);

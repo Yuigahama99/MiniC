@@ -45,7 +45,11 @@ MiniC/
 │   │   └── debug.h / debug.cpp   # Logging and trace helpers
 │   ├── lexer/                    # Lexer module (implemented)
 │   │   ├── include/              # Public lexer headers
-│   │   └── lexer.cpp             # Lexer implementation
+│   │   │   ├── token.h           # Token and TokenType definitions
+│   │   │   ├── lexer.h           # Lexer class interface
+│   │   │   └── lexer_tables.h    # Lexer lookup table interfaces
+│   │   ├── lexer.cpp             # Lexer implementation
+│   │   └── lexer_tables.cpp      # Keyword/operator/delimiter lookup tables
 │   ├── parser/                   # Parser module (planned)
 │   ├── semantic/                 # Semantic analysis module (planned)
 │   ├── ir/                       # IR module (planned)

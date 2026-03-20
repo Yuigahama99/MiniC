@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <utility>
 
 #include "common/debug.h"
 #include "lexer/include/lexer.h"
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
 
     DEBUG_LOG(LogModule::Main, LogLevel::Info, "Loaded source file: %s (%zu bytes)", argv[1], source.size());
 
-    Lexer lexer(source);
+    Lexer lexer(std::move(source));
 
     while (true)
     {

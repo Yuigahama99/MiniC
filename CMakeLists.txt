@@ -11,6 +11,7 @@ option(ENABLE_DEBUG_LOG "Enable debug logging" OFF)
 add_executable(minic
     src/main.cpp
     src/lexer/lexer.cpp
+    src/lexer/lexer_tables.cpp
     src/common/debug.cpp
 )
 
