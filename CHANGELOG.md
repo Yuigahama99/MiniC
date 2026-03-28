@@ -133,3 +133,29 @@ All notable changes to this project will be documented in this file
 ### Removed
 
 - None
+
+---
+
+## [UnReleased] - 03/28/2026
+
+### Added
+
+- `string` keyword support in lexer token model (`KeywordString`)
+- Keyword test coverage updated to include `string`
+
+### Changed
+
+- `docs/specification.md` aligned with current syntax decisions:
+  - delimiters now limited to `(` `)` `{` `}` `;` `,`
+  - postfix expressions currently support function calls only
+  - indexing (`[]`) and member access (`.`) are explicitly not supported yet
+- `docs/design/lexer.md` incrementally aligned with specification updates:
+  - keywords now include `string`
+  - delimiter definition updated to remove `[` `]` `.`
+  - future extension wording adjusted for numeric literal expansion
+- Lexer keyword table updated to recognize `string` as a reserved keyword
+- Exponent detection logic in `lexer.cpp` refactored for readability while preserving behavior
+
+### Removed
+
+- Removed `LBracket`, `RBracket`, and `Dot` delimiter tokens from lexer token model and lookup tables

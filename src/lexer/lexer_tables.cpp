@@ -8,6 +8,7 @@ const std::unordered_map<std::string, TokenType> kKeywords = {
     {"int", TokenType::KeywordInt},
     {"float", TokenType::KeywordFloat},
     {"char", TokenType::KeywordChar},
+    {"string", TokenType::KeywordString},
     {"void", TokenType::KeywordVoid},
     {"if", TokenType::KeywordIf},
     {"else", TokenType::KeywordElse},
@@ -39,11 +40,8 @@ const std::unordered_map<char, TokenType> kDelimiters = {
     {')', TokenType::RParen},
     {'{', TokenType::LBrace},
     {'}', TokenType::RBrace},
-    {'[', TokenType::LBracket},
-    {']', TokenType::RBracket},
     {';', TokenType::Semicolon},
     {',', TokenType::Comma},
-    {'.', TokenType::Dot},
 };
 }
 

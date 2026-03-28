@@ -280,7 +280,13 @@ Token Lexer::tokenizeNumber()
     }
 
     // exponent part (e or E followed by optional +/- and digits)
-    if ((peek() == 'e' || peek() == 'E') && (isDigit(peekNext()) || (peekNext() == '+' || peekNext() == '-') && current + 2 < source.size() && isDigit(source[current + 2])))
+    const bool hasExponentMarker = (peek() == 'e' || peek() == 'E');
+    const bool hasExponentDigit = isDigit(peekNext());
+    const bool hasSignedExponent =
+        (peekNext() == '+' || peekNext() == '-') &&
+        (current + 2 < source.size()) &&
+        isDigit(source[current + 2]);
+    if (hasExponentMarker && (hasExponentDigit || hasSignedExponent))
     {
         DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Exponent detected, tokenizing as float literal");
         isFloat = true;
@@ -342,7 +348,13 @@ Token Lexer::tokenizeLeadingDotFloat()
     }
 
     // exponent part (e or E followed by optional +/- and digits)
-    if ((peek() == 'e' || peek() == 'E') && (isDigit(peekNext()) || (peekNext() == '+' || peekNext() == '-') && current + 2 < source.size() && isDigit(source[current + 2])))
+    const bool hasExponentMarker = (peek() == 'e' || peek() == 'E');
+    const bool hasExponentDigit = isDigit(peekNext());
+    const bool hasSignedExponent =
+        (peekNext() == '+' || peekNext() == '-') &&
+        (current + 2 < source.size()) &&
+        isDigit(source[current + 2]);
+    if (hasExponentMarker && (hasExponentDigit || hasSignedExponent))
     {
         DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Exponent detected in leading-dot float, continuing as float literal");
         advance(); // consume 'e' or 'E'

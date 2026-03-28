@@ -15,6 +15,8 @@ const char *tokenTypeName(TokenType type)
         return "KeywordFloat";
     case TokenType::KeywordChar:
         return "KeywordChar";
+    case TokenType::KeywordString:
+        return "KeywordString";
     case TokenType::KeywordVoid:
         return "KeywordVoid";
     case TokenType::KeywordIf:
@@ -75,16 +77,10 @@ const char *tokenTypeName(TokenType type)
         return "LBrace";
     case TokenType::RBrace:
         return "RBrace";
-    case TokenType::LBracket:
-        return "LBracket";
-    case TokenType::RBracket:
-        return "RBracket";
     case TokenType::Semicolon:
         return "Semicolon";
     case TokenType::Comma:
         return "Comma";
-    case TokenType::Dot:
-        return "Dot";
     case TokenType::EndOfFile:
         return "EndOfFile";
     case TokenType::Error:

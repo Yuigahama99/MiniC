@@ -11,6 +11,7 @@ enum class TokenType
     KeywordInt,
     KeywordFloat,
     KeywordChar,
+    KeywordString,
     KeywordVoid,
     KeywordIf,
     KeywordElse,
@@ -47,11 +48,8 @@ enum class TokenType
     RParen,
     LBrace,
     RBrace,
-    LBracket,
-    RBracket,
     Semicolon,
     Comma,
-    Dot,
 
     // special
     EndOfFile,

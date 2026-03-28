@@ -216,7 +216,6 @@ This roadmap outlines the development plan for the MiniC compiler, from the mini
 
 **Possible Extensions:**
 - Arrays
-- Strings
 - Structs
 - Pointers
 - Modules

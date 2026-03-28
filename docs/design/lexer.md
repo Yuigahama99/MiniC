@@ -187,11 +187,11 @@ This section defines the regular expressions used to recognize the tokens in Min
 ### 2.1 keywords
 
 Keywords are reserved words in MiniC. They are matched exactly as written:
-`int` `float` `char` `void`
+`int` `float` `char` `string` `void`
 `if` `else` `while` `for` `return`
 
 ```regex
-\b(int|float|char|void|if|else|while|for|return)\b
+\b(int|float|char|string|void|if|else|while|for|return)\b
 ```
 
 ---
@@ -282,10 +282,10 @@ Operators in MiniC include arithmetic, logical, and assignment operators
 
 ### 2.5 Delimiters
 
-Delimiters includes parentheses, braces, brackets, semicolons, commas, and dots
+Delimiters includes parentheses, braces, semicolons, and commas.
 
 ```regex
-(\(|\)|\{|\}|\[|\]|;|,|\.)
+(\(|\)|\{|\}|;|,)
 ```
 
 ---
@@ -374,7 +374,7 @@ For a pattern `A`, the NFA for `A*` introduces a new start state with ε-transit
 **Regex**
 
 ```regex
-\b(int|float|char|void|if|else|while|for|return)\b
+\b(int|float|char|string|void|if|else|while|for|return)\b
 ```
 
 **NFA**
@@ -526,11 +526,10 @@ In the current code layout, token/category lookup tables are separated from lexe
 | **Extension**                              | **Priority** | **Benefit**                                                       | **Complexity** | **Notes**                                                                                                           |
 |--------------------------------------------|-------------:|-------------------------------------------------------------------|---------------:|---------------------------------------------------------------------------------------------------------------------|
 | Escape sequence support                    |         High | Makes string/char literals usable and compatible with common code |         Medium | Decode common escapes; add `decodedValue` to `Token`                                                                |
-| Exponent and leading-dot floats            |       Medium | More complete numeric literal support                             |            Low | Support `1e-3`, `3.14E+2`, and `.5` (route `.`+digit to number parser)                                              |
+| Additional numeric literal formats         |       Medium | More complete numeric literal support                             |         Medium | Extend beyond current decimal/float/exponent support, e.g. hex (`0x`), octal (`0o`), binary (`0b`)               |
 | Decoded literal value field                |       Medium | Parser/AST can use ready-to-use literal values                    |            Low | Keep `lexeme` raw; add optional `decodedValue` for literals                                                         |
 | Unterminated comment/string diagnostics    |         High | Better error messages and tooling UX                              |            Low | Ensure start line/column recorded before consuming `/*`, `"`, `'`                                                   |
 | Unicode identifiers                        |          Low | Internationalization and modern identifier support                |           High | Requires Unicode-aware identifier classification (UTF-8 codepoint handling)                                         |
-| Hex/octal/binary integer literals          |          Low | More literal formats for systems programming                      |         Medium | Support `0x`, `0o`, `0b` prefixes and validation                                                                    |
 | Unicode/UTF-8 string escapes               |          Low | Support `\u`/`\U` escapes for portability                         |           High | Implement `\uXXXX`/`\UXXXXXXXX` decoding and validation                                                             |
 | Peek/reset API and token buffering         |       Medium | Parser lookahead and backtracking support                         |            Low | Add `peekToken()` and `reset()` or a small token buffer                                                             |
 | Configurable lexer modes                   |          Low | Allow language dialects or feature flags (e.g., strict mode)      |         Medium | Feature flags to toggle escapes, numeric formats, Unicode, etc.                                                     |

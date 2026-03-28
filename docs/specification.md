@@ -10,7 +10,7 @@ MiniC is designed as a compact, educational subset of the C family, suitable for
 MiniC aims to:
 
 - Provide a minimal yet expressive C-like language
-- Maintain deterministic and easy-to-parse grammer
+- Maintain deterministic and easy-to-parse grammar
 - Support essential programming constructs without unnecessary complexity
 - Serve as a foundation for building a full compiler toolchain
 - Enable experimentation with parsing, semantic analysis, IR and code generation
@@ -42,29 +42,39 @@ The following keywords are reserved:
 `int`
 `float`
 `char`
-void`
+`string`
+`void`
 `if`
 `else`
 `while`
+`for`
 `return`
 
 ### 2.4 Literals
 
-#### Interger Literals
+#### Integer Literals
 Decimal integers:
 `0`
 `42`
 `1234`
 
 #### Floating-Point Literals
-`3.14`
-`0.5`
-`10.0`
+MiniC supports:
+- Decimal floating-point literals such as `3.14`, `0.5`, and `10.0`
+- Leading-dot floating-point literals such as `.5`
+- Exponent notation such as `1e5`, `1E-3`, `100e+2`, `.5e10`, and `.5E-3`
 
 #### Character Literals
+Character literals are enclosed in single quote.
+Escape sequences may be supported in a future revision.
 `'a'`
-`'\n'`
 `'0'`
+
+#### String Literals
+String literals are enclosed in double quotes.
+`"hello"`
+`"world"`
+`""`
 
 ### 2.5 Operators
 `+` `-` `*` `/` `%`
@@ -72,7 +82,11 @@ Decimal integers:
 `&&` `||`
 `!`
 
-### 2.6 Comments
+### 2.6 Delimiters
+MiniC uses the following delimiters:
+`(` `)` `{` `}` `;` `,`
+
+### 2.7 Comments
 - Single-line: `// comment`
 - Multi-line: `/* comment */`
 
@@ -81,7 +95,8 @@ Decimal integers:
 ## 3. Types
 MiniC supports the following primitive types:
 `int`
-`float` 
+`float`
+`string`
 `char`
 `void`
 
@@ -96,18 +111,26 @@ No pointers, arrays, or structs are included in teh base language (optional exte
 - Literals
 - Parenthesized expressions
 
-### 4.2 Unary Expressions
+### 4.2 Postfix Expressions
+MiniC supports function call expressions:
+`identifier(argument-list?)`
+
+Examples:
+`add(x, y)`
+`main()`
+
+### 4.3 Unary Expressions
 `!expr`
 `-expr`
 `+expr`
 
-### 4.3 Binary Expressions
-Supported binary operatiors include:
+### 4.4 Binary Expressions
+Supported binary operations include:
 - Arithemetic: `+ - * / %`
 - Comparison: `== != < > <= >=`
 - Logical: `&& ||`
 
-### 4.4 Assignment
+### 4.5 Assignment
 `Identifier = expression`
 Assignments are expressions and return the assigned value.
 
@@ -132,7 +155,14 @@ Assignments are expressions and return the assigned value.
 ### 5.5 While Statement
 `while(expression) statement`
 
-### 5.6 Return Statement
+### 5.6 For Statement
+`for(init; condition; update) statement`
+where:
+- `init` may be a declaration, an expression, or empty
+- `condition` may be an expression or empty
+- `update` may be an expression or empty
+
+### 5.7 Return Statement
 `return ;`
 `return expression;`
 
@@ -168,31 +198,39 @@ The entry point is the function:
 
 `program = function-definition*`
 
-`function-definition = type identifier"("parameter-list?")" compound-statement`
+`function-definition = type identifier "(" parameter-list? ")" compound-statement`
 
-`parameter-list = parameter("," parameter)*`
+`parameter-list = parameter ("," parameter)*`
 `parameter = type identifier`
 
-`type = "int" | "float" | "char" | "void"`
+`type = "int" | "float" | "char" | "void" | "string"`
 
-`compound-statement = { statement }`
+`compound-statement = "{" statement* "}"`
 
-`statement = expression-statement`
-`| declaration`
-`| if-statement`
-`| while-statement`
-`| return-statement`
-`| compound-statement`
+`statement = expression-statement
+           | declaration
+           | if-statement
+           | while-statement
+           | for-statement
+           | return-statement
+           | compound-statement`
 
-`expression-statement = expression?";"`
+`expression-statement = expression? ";"`
 
-`declaration = type identifier ("=" expresion)?";"`
+`declaration = type identifier ("=" expression)? ";"`
 
-`if-statement = "if""("expression")" statement "(""else" statement")"?`
+`if-statement = "if" "(" expression ")" statement ("else" statement)?`
 
-`while-statement = "while""("expression")" statement`
+`while-statement = "while" "(" expression ")" statement`
 
-`return-statement = "retur" expression?";"`
+`for-statement = "for" "(" for-init ";" for-condition? ";" for-update? ")" statement`
+
+`for-init = declaration-no-semi | expression | ε`
+`for-condition = expression`
+`for-update = expression`
+`declaration-no-semi = type identifier ("=" expression)?`
+
+`return-statement = "return" expression? ";"`
 
 `expression = assignment`
 
@@ -203,16 +241,21 @@ The entry point is the function:
 `equality = relational (("==" | "!=") relational)*`
 `relational = additive (("<" | ">" | "<=" | ">=") additive)*`
 `additive = multiplicative (("+" | "-") multiplicative)*`
-`multiplicative = unary (("*" | "/" | "%") unary)`
-`unary = ("!" | "-" | "+") unary | primary`
+`multiplicative = unary (("*" | "/" | "%") unary)*`
+`unary = ("!" | "-" | "+") unary | postfix`
 
-`primary = identifier`
-`| literal`
-`| "(" expression ")"`
+`postfix = primary ("(" argument-list? ")")*`
 
-`literal = interger-literal`
-`| float-literal`
-`| char-literal`
+`argument-list = expression ("," expression)*`
+
+`primary = identifier
+         | literal
+         | "(" expression ")"`
+
+`literal = integer-literal
+         | float-literal
+         | char-literal
+         | string-literal`
 
 ---
 
@@ -220,9 +263,8 @@ The entry point is the function:
 
 Possible future additions:
 
-- Arrays
-- Strings
-- Structs
+- Arrays (with index access)
+- Structs (with member access)
 - Functions returning non-primitive types
 - Type inference
 - Modules or namespaces
