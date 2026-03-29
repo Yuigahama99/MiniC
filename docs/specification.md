@@ -207,13 +207,15 @@ The entry point is the function:
 
 `compound-statement = "{" statement* "}"`
 
-`statement = expression-statement
+```
+statement = expression-statement
            | declaration
            | if-statement
            | while-statement
            | for-statement
            | return-statement
-           | compound-statement`
+           | compound-statement
+```
 
 `expression-statement = expression? ";"`
 
@@ -248,14 +250,16 @@ The entry point is the function:
 
 `argument-list = expression ("," expression)*`
 
-`primary = identifier
+```primary = identifier
          | literal
-         | "(" expression ")"`
+         | "(" expression ")"
+```
 
-`literal = integer-literal
+```literal = integer-literal
          | float-literal
          | char-literal
-         | string-literal`
+         | string-literal
+```
 
 ---
 
