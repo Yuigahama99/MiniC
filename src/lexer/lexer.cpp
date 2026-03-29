@@ -1,6 +1,6 @@
-#include "include/lexer.h"
-#include "include/lexer_tables.h"
-#include "../common/debug.h"
+#include "lexer/include/lexer.h"
+#include "lexer/include/lexer_tables.h"
+#include "common/debug.h"
 
 #include <cctype>
 
@@ -312,6 +312,21 @@ Token Lexer::tokenizeNumber()
         }
     }
 
+    // check for invalid identifier-like suffix (e.g., 123main)
+    if (isAlpha(peek()) || peek() == '_')
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Invalid number: digit literal followed by identifier character %s", charRepr(peek()));
+        
+        // consume the entire invalid identifier part to prevent it from being tokenized separately
+        while (isAlpha(peek()) || isDigit(peek()) || peek() == '_')
+        {
+            advance();
+        }
+        
+        std::string lexeme = source.substr(start, current - start);
+        return Token(TokenType::Error, "Invalid number: digit literal cannot be immediately followed by letter or underscore", startLine, startColumn);
+    }
+
     // extract lexeme
     std::string lexeme = source.substr(start, current - start);
 
@@ -370,6 +385,21 @@ Token Lexer::tokenizeLeadingDotFloat()
         {
             advance();
         }
+    }
+
+    // check for invalid identifier-like suffix (e.g., .5main)
+    if (isAlpha(peek()) || peek() == '_')
+    {
+        DEBUG_LOG(LogModule::Lexer, LogLevel::Debug, "Invalid float: leading-dot float literal followed by identifier character %s", charRepr(peek()));
+        
+        // consume the entire invalid identifier part to prevent it from being tokenized separately
+        while (isAlpha(peek()) || isDigit(peek()) || peek() == '_')
+        {
+            advance();
+        }
+        
+        std::string lexeme = source.substr(start, current - start);
+        return Token(TokenType::Error, "Invalid number: float literal cannot be immediately followed by letter or underscore", startLine, startColumn);
     }
 
     std::string lexeme = source.substr(start, current - start);

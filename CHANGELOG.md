@@ -4,6 +4,31 @@ All notable changes to this project will be documented in this file
 
 ---
 
+## [UnReleased] - 03/29/2026
+
+### Added
+
+- Parser implementation foundation:
+  - `src/parser/include/ast.h`: Complete AST node definitions with all statement and expression types
+  - `src/parser/include/parser.h`: Parser public API and diagnostic structures
+  - `src/parser/parser.cpp`: Minimal parser implementation (token streaming, error collection)
+- Test file `tests/lexer/error_numeric_suffix.mc` covering numeric literal suffix validation corner cases
+
+### Changed
+
+- Lexer numeric suffix validation improved: Invalid tokens like `123main` or `.5test` are now consumed entirely as single Error tokens
+  - `tokenizeNumber()`: When digit literal is followed by letter/underscore, consume entire invalid identifier sequence before returning Error token
+  - `tokenizeLeadingDotFloat()`: When float literal is followed by letter/underscore, consume entire invalid identifier sequence before returning Error token
+- Lexer include paths unified: All includes now use `#include "lexer/..."` and `#include "common/..."` format from src root
+- `docs/design/lexer.md`: Added validation rules documentation for numeric literals
+- Test framework `scripts/run_tests.py`: Changed to capture stderr for diagnostics instead of stdout
+
+### Removed
+
+- None
+
+---
+
 ## [UnReleased] - 03/28/2026
 
 ### Added

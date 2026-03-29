@@ -13,6 +13,7 @@ add_executable(minic
     src/lexer/lexer.cpp
     src/lexer/lexer_tables.cpp
     src/common/debug.cpp
+    src/parser/parser.cpp
 )
 
 target_include_directories(minic PRIVATE

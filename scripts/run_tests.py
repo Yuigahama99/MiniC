@@ -40,8 +40,8 @@ def run_test(binary, filepath):
         with open(tmpname, 'w') as out:
             proc = subprocess.run(
                 [binary, filepath],
-                stdout=out,
-                stderr=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=out,
                 timeout=10
             )
         with open(tmpname, 'r') as f:
@@ -89,7 +89,7 @@ def run_suite(suite_dir):
         with open(out_filepath, 'w') as f:
             f.write("\n".join(output) + "\n")
 
-        has_error = any("Type: Error" in line for line in output)
+        has_error = any("[error]" in line for line in output)
 
         if exit_code != 0:
             print(f"  {RED}[CRASH]  {RESET}{filename} (exit {exit_code})")

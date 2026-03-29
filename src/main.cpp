@@ -4,91 +4,7 @@
 
 #include "common/debug.h"
 #include "lexer/include/lexer.h"
-
-const char *tokenTypeName(TokenType type)
-{
-    switch (type)
-    {
-    case TokenType::KeywordInt:
-        return "KeywordInt";
-    case TokenType::KeywordFloat:
-        return "KeywordFloat";
-    case TokenType::KeywordChar:
-        return "KeywordChar";
-    case TokenType::KeywordString:
-        return "KeywordString";
-    case TokenType::KeywordVoid:
-        return "KeywordVoid";
-    case TokenType::KeywordIf:
-        return "KeywordIf";
-    case TokenType::KeywordElse:
-        return "KeywordElse";
-    case TokenType::KeywordWhile:
-        return "KeywordWhile";
-    case TokenType::KeywordFor:
-        return "KeywordFor";
-    case TokenType::KeywordReturn:
-        return "KeywordReturn";
-    case TokenType::Identifier:
-        return "Identifier";
-    case TokenType::IntLiteral:
-        return "IntLiteral";
-    case TokenType::FloatLiteral:
-        return "FloatLiteral";
-    case TokenType::CharLiteral:
-        return "CharLiteral";
-    case TokenType::StringLiteral:
-        return "StringLiteral";
-    case TokenType::Plus:
-        return "Plus";
-    case TokenType::Minus:
-        return "Minus";
-    case TokenType::Multiply:
-        return "Multiply";
-    case TokenType::Divide:
-        return "Divide";
-    case TokenType::Modulo:
-        return "Modulo";
-    case TokenType::Assign:
-        return "Assign";
-    case TokenType::Equal:
-        return "Equal";
-    case TokenType::NotEqual:
-        return "NotEqual";
-    case TokenType::Less:
-        return "Less";
-    case TokenType::LessEqual:
-        return "LessEqual";
-    case TokenType::Greater:
-        return "Greater";
-    case TokenType::GreaterEqual:
-        return "GreaterEqual";
-    case TokenType::And:
-        return "And";
-    case TokenType::Or:
-        return "Or";
-    case TokenType::Not:
-        return "Not";
-    case TokenType::LParen:
-        return "LParen";
-    case TokenType::RParen:
-        return "RParen";
-    case TokenType::LBrace:
-        return "LBrace";
-    case TokenType::RBrace:
-        return "RBrace";
-    case TokenType::Semicolon:
-        return "Semicolon";
-    case TokenType::Comma:
-        return "Comma";
-    case TokenType::EndOfFile:
-        return "EndOfFile";
-    case TokenType::Error:
-        return "Error";
-    default:
-        return "Unknown";
-    }
-}
+#include "parser/include/parser.h"
 
 int main(int argc, char *argv[])
 {
@@ -111,25 +27,29 @@ int main(int argc, char *argv[])
     DEBUG_LOG(LogModule::Main, LogLevel::Info, "Loaded source file: %s (%zu bytes)", argv[1], source.size());
 
     Lexer lexer(std::move(source));
+    Parser parser(lexer);
+    ParseResult result = parser.parse();
 
-    while (true)
+    for (const auto &d : result.diagnostics)
     {
-        Token token = lexer.nextToken();
-        if (token.type == TokenType::EndOfFile)
-        {
-            break;
-        }
-
-        DEBUG_LOG(LogModule::Main, LogLevel::Debug, "Token: %s (Type: %s, Line: %d, Col: %d)",
-                  token.lexeme.c_str(), tokenTypeName(token.type), token.line, token.column);
-
-        std::cout << "Token: " << token.lexeme
-                  << " (Type: " << tokenTypeName(token.type)
-                  << ", Line: " << token.line
-                  << ", Column: " << token.column
-                  << ")" << std::endl;
+        const char *severity = (d.severity == DiagnosticSeverity::Error) ? "error" : "warning";
+        std::cerr << "[" << severity << "] "
+                    << d.span.start.line << ":" << d.span.start.column
+                    << " - " << d.message << std::endl;
     }
 
-    DEBUG_LOG(LogModule::Main, LogLevel::Info, "Lexing complete for: %s", argv[1]);
+    if (result.status == ParseStatus::Aborted || parser.hasFatalError())
+    {
+        DEBUG_LOG(LogModule::Main, LogLevel::Error, "Parsing aborted for: %s", argv[1]);
+        return 1;
+    }
+
+    if (result.status == ParseStatus::RecoveredWithErrors)
+    {
+        DEBUG_LOG(LogModule::Main, LogLevel::Warn, "Parsing completed with errors for: %s", argv[1]);
+        return 0;
+    }
+
+    DEBUG_LOG(LogModule::Main, LogLevel::Info, "Parsing complete for: %s", argv[1]);
     return 0;
 }

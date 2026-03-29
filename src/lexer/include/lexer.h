@@ -1,6 +1,6 @@
 #pragma once
 
-#include "token.h"
+#include "lexer/include/token.h"
 
 #include <cstddef>
 #include <string>

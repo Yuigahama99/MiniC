@@ -232,6 +232,8 @@ In practice, the lexer tokenizes:
 - `.` followed by digits with optional exponent
 - Exponent: `(e|E)` followed by optional `(+|-)` and required digits
 
+**Validation**: Numeric literals (both integer and floating-point) cannot be immediately followed by a letter or underscore in the same token context. This prevents ambiguous cases like `123main` or `.5test` from being misparsed. Invalid sequences generate an Error token with message "digit/float literal cannot be immediately followed by letter or underscore".
+
 #### Charater Literals
 
 Character literals are single characters enclosed in single quotes (`'`).

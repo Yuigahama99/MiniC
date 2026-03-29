@@ -1,4 +1,4 @@
-#include "include/lexer_tables.h"
+#include "lexer/include/lexer_tables.h"
 
 #include <unordered_map>
 
