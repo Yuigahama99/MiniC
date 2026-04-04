@@ -12,7 +12,8 @@ MiniC is a minimal subset of C designed for learning purposes. This project impl
 
 ### 🏗️ Compiler Pipeline
 - **Lexer** — Full tokenizer supporting keywords, identifiers, int/float/char/string literals, multi-char operators, and delimiters
-- **Parser** / **Semantic** / **IR** / **Optimizer** / **Codegen** — Coming soon
+- **Parser** — Recursive-descent parser with precedence-based expression parsing, statement/function parsing, and panic-mode recovery diagnostics
+- **Semantic** / **IR** / **Optimizer** / **Codegen** — Coming soon
 
 ### 🧰 Tooling & Infrastructure
 - **CMake Build System** — LLVM clang-based build with `cmake --preset ...`
@@ -28,7 +29,7 @@ MiniC is a minimal subset of C designed for learning purposes. This project impl
 | Module       | Status         |
 |--------------|----------------|
 | Lexer        | ✅ Complete     |
-| Parser       | 🔲 Planned      |
+| Parser       | ✅ Complete     |
 | Semantic     | 🔲 Planned      |
 | IR           | 🔲 Planned      |
 | Optimizer    | 🔲 Planned      |
@@ -50,17 +51,24 @@ MiniC/
 │   │   │   └── lexer_tables.h    # Lexer lookup table interfaces
 │   │   ├── lexer.cpp             # Lexer implementation
 │   │   └── lexer_tables.cpp      # Keyword/operator/delimiter lookup tables
-│   ├── parser/                   # Parser module (planned)
+│   ├── parser/                   # Parser module (implemented)
+│   │   ├── include/              # AST and parser interfaces
+│   │   ├── parser.cpp            # Token cursor, diagnostics, parse entry
+│   │   ├── topLevelParser.cpp    # Program/function parsing
+│   │   ├── statementParser.cpp   # Statement parsing
+│   │   └── expressionParser.cpp  # Expression parsing (precedence chain)
 │   ├── semantic/                 # Semantic analysis module (planned)
 │   ├── ir/                       # IR module (planned)
 │   ├── optimizer/                # Optimization passes (planned)
 │   ├── codegen/                  # Code generation module (planned)
 │   └── runtime/                  # Runtime/VM module (planned)
 ├── tests/                        # Test inputs by module
-│   └── lexer/                    # Lexer test cases (.mc)
+│   ├── lexer/                    # Lexer test cases (.mc)
+│   └── parser/                   # Parser test cases (.mc)
 ├── scripts/
 │   ├── run_tests.py              # Test runner (all suites)
-│   └── test_lexer.py             # Lexer-only wrapper
+│   ├── test_lexer.py             # Lexer-only wrapper
+│   └── test_parser.py            # Parser-only wrapper
 ├── docs/                         # Design/spec docs
 ├── CMakeLists.txt                # Main CMake build definition
 ├── CMakePresets.json             # LLVM debug/release presets
@@ -89,12 +97,22 @@ cmake --build --preset build-debug
 
 # Clean build artifacts
 rm -rf build logs
+
+# Or use Makefile wrappers
+make all
+make debug
+make clean
 ```
 
 ### Run
 
 ```bash
+# Parse mode (default)
 ./build/minic <source_file.mc>
+./build/minic --stage parse <source_file.mc>
+
+# Lexer-only mode
+./build/minic --stage lex <source_file.mc>
 ```
 
 ### Test
@@ -110,6 +128,21 @@ cmake --build build --target test
 
 # Run lexer tests only
 cmake --build build --target test-lexer
+
+# Run parser tests only
+cmake --build build --target test-parser
+
+# Makefile shortcuts
+make test
+make test-lexer
+make test-parser
+
+# Keep debug logging enabled while testing (same invocation)
+make debug test-parser
+
+# Note: running these separately will switch test back to non-debug config
+# make debug
+# make test-parser
 ```
 
 Test output is saved to `tests/<suite>/output/*.out` for inspection.
@@ -120,6 +153,9 @@ The debug logging system can be toggled at compile time:
 
 - `cmake --preset llvm-debug && cmake --build --preset build-debug` — logging disabled (zero overhead)
 - `cmake --preset llvm-debug -DENABLE_DEBUG_LOG=ON && cmake --build --preset build-debug` — logging enabled, logs written to `logs/<module>.log`
+- `make debug` — Makefile wrapper for enabling debug logging and building with the debug preset
+- `make test` / `make test-lexer` / `make test-parser` — test wrappers default to non-debug configuration
+- `make debug test` / `make debug test-lexer` / `make debug test-parser` — enable logs only when `debug` is explicitly present
 
 Usage in code:
 
@@ -127,8 +163,8 @@ Usage in code:
 #include "common/debug.h"
 
 void someFunction() {
-    TRACE_ENTER_EXIT(LogModule::Lexer);  // Auto logs Entering/Exiting
-    DEBUG_LOG(LogModule::Lexer, LogLevel::Info, "Processing token: %s", lexeme.c_str());
+    TRACE_ENTER_EXIT(LogModule::Parser);  // Auto logs Entering/Exiting
+    DEBUG_LOG(LogModule::Parser, LogLevel::Info, "Parsing node: %s", nodeName.c_str());
 }
 ```
 

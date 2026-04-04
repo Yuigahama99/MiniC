@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(MiniC VERSION 0.1.0 LANGUAGES CXX)
+project(MiniC VERSION 0.2.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,6 +14,9 @@ add_executable(minic
     src/lexer/lexer_tables.cpp
     src/common/debug.cpp
     src/parser/parser.cpp
+    src/parser/topLevelParser.cpp
+    src/parser/statementParser.cpp
+    src/parser/expressionParser.cpp
 )
 
 target_include_directories(minic PRIVATE
@@ -36,6 +39,13 @@ add_custom_target(test-lexer
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     DEPENDS minic
     COMMENT "Running lexer tests"
+)
+
+add_custom_target(test-parser
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/test_parser.py
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    DEPENDS minic
+    COMMENT "Running parser tests"
 )
 
 add_custom_target(test

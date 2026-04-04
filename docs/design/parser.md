@@ -137,9 +137,9 @@ statement = expression-statement
 
 `while-statement = while (expression) statement`
 
-`for-statement = for (for-init; for-condition?; for-update?) statement`
+`for-statement = for (for-init?; for-condition?; for-update?) statement`
 
-`for-init = declaration-no-semi | expression | ε`
+`for-init = declaration-no-semi | expression`
 `for-condition = expression`
 `for-update = expression`
 `declaration-no-semi = type identifier ("=" expression)?`
@@ -630,15 +630,14 @@ Grammar:
 ### 7.7 For Statement
 
 Grammar:
-`for-statement = "for" "(" for-init ";" for-condition? ";" for-update? ")" statement`
-`for-init = declaration-no-semi | expression | ε`
+`for-statement = "for" "(" for-init? ";" for-condition? ";" for-update? ")" statement`
+`for-init = declaration-no-semi | expression`
 
 `parseForStmt()` behavior:
 - consume `for` and require `(`
 - parse init:
     - declaration without trailing semicolon, or
-    - expression, or
-    - empty
+    - expression
 - require first `;`
 - parse optional condition
 - require second `;`

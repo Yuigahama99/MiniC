@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 #include <fstream>
 #include <utility>
@@ -6,27 +7,80 @@
 #include "lexer/include/lexer.h"
 #include "parser/include/parser.h"
 
+enum class Stage { Lex, Parse };
+
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+    Stage stage = Stage::Parse;
+    const char *inputPath = nullptr;
+
+    for (int i = 1; i < argc; ++i)
     {
-        std::cerr << "Usage: " << argv[0] << " <input_file>" << std::endl;
+        if (std::strcmp(argv[i], "--stage") == 0 && i + 1 < argc)
+        {
+            ++i;
+            if (std::strcmp(argv[i], "lex") == 0)
+                stage = Stage::Lex;
+            else if (std::strcmp(argv[i], "parse") == 0)
+                stage = Stage::Parse;
+            else
+            {
+                std::cerr << "Unknown stage: " << argv[i] << std::endl;
+                return 1;
+            }
+        }
+        else if (argv[i][0] != '-')
+        {
+            inputPath = argv[i];
+        }
+        else
+        {
+            std::cerr << "Unknown option: " << argv[i] << std::endl;
+            return 1;
+        }
+    }
+
+    if (!inputPath)
+    {
+        std::cerr << "Usage: " << argv[0] << " [--stage lex|parse] <input_file>" << std::endl;
         return 1;
     }
 
-    std::ifstream inputFile(argv[1]);
+    std::ifstream inputFile(inputPath);
     if (!inputFile.is_open())
     {
-        std::cerr << "Error: Could not open file " << argv[1] << std::endl;
+        std::cerr << "Error: Could not open file " << inputPath << std::endl;
         return 1;
     }
 
-    std::string source{std::istreambuf_iterator<char>(inputFile), std::istreambuf_iterator<char>()};
+    std::string source;
+    source.assign(std::istreambuf_iterator<char>(inputFile), std::istreambuf_iterator<char>());
     inputFile.close();
 
-    DEBUG_LOG(LogModule::Main, LogLevel::Info, "Loaded source file: %s (%zu bytes)", argv[1], source.size());
+    DEBUG_LOG(LogModule::Main, LogLevel::Info, "Loaded source file: %s (%zu bytes)", inputPath, source.size());
 
     Lexer lexer(std::move(source));
+
+    // Stage: lex only
+    if (stage == Stage::Lex)
+    {
+        bool hasError = false;
+        while (true)
+        {
+            Token token = lexer.nextToken();
+            if (token.type == TokenType::Error)
+            {
+                std::cerr << "[error] " << token.line << ":" << token.column
+                          << " - " << token.lexeme << std::endl;
+                hasError = true;
+            }
+            if (token.type == TokenType::EndOfFile)
+                break;
+        }
+        return hasError ? 0 : 0;
+    }
+
+    // Stage: parse (lexer + parser)
     Parser parser(lexer);
     ParseResult result = parser.parse();
 
@@ -40,16 +94,16 @@ int main(int argc, char *argv[])
 
     if (result.status == ParseStatus::Aborted || parser.hasFatalError())
     {
-        DEBUG_LOG(LogModule::Main, LogLevel::Error, "Parsing aborted for: %s", argv[1]);
+        DEBUG_LOG(LogModule::Main, LogLevel::Error, "Parsing aborted for: %s", inputPath);
         return 1;
     }
 
     if (result.status == ParseStatus::RecoveredWithErrors)
     {
-        DEBUG_LOG(LogModule::Main, LogLevel::Warn, "Parsing completed with errors for: %s", argv[1]);
+        DEBUG_LOG(LogModule::Main, LogLevel::Warn, "Parsing completed with errors for: %s", inputPath);
         return 0;
     }
 
-    DEBUG_LOG(LogModule::Main, LogLevel::Info, "Parsing complete for: %s", argv[1]);
+    DEBUG_LOG(LogModule::Main, LogLevel::Info, "Parsing complete for: %s", inputPath);
     return 0;
 }

@@ -147,7 +147,7 @@ struct WhileStmt : Stmt
     std::unique_ptr<Stmt> body;
 };
 
-// Grammar: for-statement = "for" "(" for-init ";" for-condition? ";" for-update? ")" statement
+// Grammar: for-statement = "for" "(" for-init? ";" for-condition? ";" for-update? ")" statement
 struct ForStmt : Stmt
 {
     std::unique_ptr<Stmt> init; // optional

@@ -4,7 +4,34 @@ All notable changes to this project will be documented in this file
 
 ---
 
-## [UnReleased] - 03/29/2026
+## [0.2.0] - 04/04/2026
+
+### Added
+
+- Parser fully landed with split implementation files:
+  - `src/parser/parser.cpp`: token cursor, diagnostics, synchronization, parser entry
+  - `src/parser/topLevelParser.cpp`: program/function/type/parameter parsing
+  - `src/parser/statementParser.cpp`: statement dispatch and all statement parsers
+  - `src/parser/expressionParser.cpp`: precedence chain expression parsing
+- Parser test suite added under `tests/parser/` with positive and error-recovery cases
+- Parser-only test wrapper script `scripts/test_parser.py`
+- CMake custom target `test-parser` for parser suite execution
+
+### Changed
+
+- `src/main.cpp` now supports pipeline stage selection with `--stage lex|parse`
+- Test runner `scripts/run_tests.py` updated to dispatch per-suite stage flags (`lexer -> lex`, `parser -> parse`)
+- `Makefile` aligned with parser workflow (`test-parser` target added and behavior clarified around debug vs non-debug test invocations)
+- `README.md` updated for parser-complete status, parser project structure, stage-based run examples, and parser test commands
+- Parser debug tracing/logging expanded
+
+### Removed
+
+- None
+
+---
+
+## [Unreleased] - 03/29/2026
 
 ### Added
 
@@ -29,7 +56,7 @@ All notable changes to this project will be documented in this file
 
 ---
 
-## [UnReleased] - 03/28/2026
+## [Unreleased] - 03/28/2026
 
 ### Added
 
@@ -49,7 +76,7 @@ All notable changes to this project will be documented in this file
 
 ---
 
-## [UnReleased] - 03/27/2026
+## [Unreleased] - 03/27/2026
 
 ### Added
 
@@ -75,7 +102,7 @@ All notable changes to this project will be documented in this file
 
 ---
 
-## [UnReleased] - 03/20/2026
+## [Unreleased] - 03/20/2026
 
 ### Added
 
@@ -126,7 +153,7 @@ All notable changes to this project will be documented in this file
 
 ---
 
-## [UnReleased] - 03/13/2026
+## [Unreleased] - 03/13/2026
 
 ### Added
 
@@ -149,7 +176,7 @@ All notable changes to this project will be documented in this file
 
 ---
 
-## [UnReleased] - 03/12/2026
+## [Unreleased] - 03/12/2026
 
 ### Added
 
@@ -163,7 +190,7 @@ All notable changes to this project will be documented in this file
 
 ---
 
-## [UnReleased] - 03/11/2026
+## [Unreleased] - 03/11/2026
 
 ### Added
 
@@ -183,7 +210,7 @@ All notable changes to this project will be documented in this file
 
 ---
 
-## [UnReleased] - 03/10/2026
+## [Unreleased] - 03/10/2026
 
 ### Added
 

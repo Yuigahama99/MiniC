@@ -158,7 +158,7 @@ Assignments are expressions and return the assigned value.
 ### 5.6 For Statement
 `for(init; condition; update) statement`
 where:
-- `init` may be a declaration, an expression, or empty
+- `init` may be omitted, or be a declaration/expression when present
 - `condition` may be an expression or empty
 - `update` may be an expression or empty
 
@@ -225,9 +225,9 @@ statement = expression-statement
 
 `while-statement = "while" "(" expression ")" statement`
 
-`for-statement = "for" "(" for-init ";" for-condition? ";" for-update? ")" statement`
+`for-statement = "for" "(" for-init? ";" for-condition? ";" for-update? ")" statement`
 
-`for-init = declaration-no-semi | expression | ε`
+`for-init = declaration-no-semi | expression`
 `for-condition = expression`
 `for-update = expression`
 `declaration-no-semi = type identifier ("=" expression)?`

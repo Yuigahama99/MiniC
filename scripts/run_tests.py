@@ -30,16 +30,29 @@ CYAN   = "\033[96m"
 DARK_RED = "\033[31m"
 RESET  = "\033[0m"
 
-def run_test(binary, filepath):
+# Map suite name to pipeline stage flag
+SUITE_STAGE = {
+    "lexer": "lex",
+    "parser": "parse",
+    # future: "semantic": "semantic"
+}
+
+def run_test(binary, filepath, suite_name):
     """Run binary on filepath, return (exit_code, output_lines)."""
     import tempfile
     with tempfile.NamedTemporaryFile(mode='r', suffix='.txt', delete=False) as tmp:
         tmpname = tmp.name
 
+    stage = SUITE_STAGE.get(suite_name)
+    cmd = [binary]
+    if stage:
+        cmd += ["--stage", stage]
+    cmd.append(filepath)
+
     try:
         with open(tmpname, 'w') as out:
             proc = subprocess.run(
-                [binary, filepath],
+                cmd,
                 stdout=subprocess.DEVNULL,
                 stderr=out,
                 timeout=10
@@ -55,6 +68,7 @@ def run_test(binary, filepath):
 
 
 def run_suite(suite_dir):
+    suite_name = os.path.basename(suite_dir)
     test_files = sorted(
         f for f in os.listdir(suite_dir) if f.endswith(".mc")
     )
@@ -73,7 +87,7 @@ def run_suite(suite_dir):
         expect_error = filename.startswith("error_")
 
         try:
-            exit_code, output = run_test(BINARY, filepath)
+            exit_code, output = run_test(BINARY, filepath, suite_name)
         except subprocess.TimeoutExpired:
             print(f"  {RED}[TIMEOUT]{RESET} {filename}")
             failed += 1
